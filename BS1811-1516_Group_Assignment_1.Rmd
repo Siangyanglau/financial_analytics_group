@@ -1,0 +1,96 @@
+---
+title: "BS1811-1516 Financial Analytics Assignment 1"
+author: "C.K. Poon, Jin Lee, Chan Baik, Yujia Ren, Siang Lau"
+date: "30 May 2016"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+    theme: spacelab
+    number_sections: yes
+---
+```{r setup, include = FALSE}
+# Set knitr options
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+library(readr)
+library(dplyr)
+library(tidyr)
+library(knitr)
+library(ggplot2)
+```
+
+# Introduction
+To be written
+
+# Data Preparation
+
+**Step 1** - Load the data
+```{r step_1}
+#Reading data
+
+```
+
+
+# CVA pricing
+
+## Part i
+Write your own Black Scholes function and price [= CBS] a simple call option with the following
+inputs:
+```{r}
+
+```
+
+## Part ii
+Implement a Geometric Brownian Motion (GBM) for the Equity underlying process
+```{r}
+
+```
+
+## Part iii
+Use your Black Scholes function and the paths derived in the previous step to
+```{r}
+
+```
+
+## Part iv
+Use the MtM distributions from the previous step [a matrix (13110000) is expected] and calcu-
+late the Expected Exposure (EE), the Potential Future Exposure (PFE) at 95% condence level
+and the CVA price using the following counterparty spread curve:
+```{r}
+
+```
+
+## Part v
+Now add a second option trade in the portfolio.
+```{r}
+
+```
+
+
+# Option pricing
+## Part 1
+## Part 2
+## Part 3
+
+
+# Backtesting
+## Part 1
+```{r}
+
+```
+
+## Part 2
+```{r}
+
+```
+
+## Part 3
+```{r}
+
+```
+
+
+# Reference
+* Reference 1
+* Reference 2
