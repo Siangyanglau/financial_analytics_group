@@ -140,16 +140,17 @@ time<-seq(0,T,tStep)
 start_value<-100
 # yearly vola
 vola<-0.25
-# yearly drift
-drift<-0
-# Strike price
-strike<-90
 # Annualized rate of interest
 r <-0.01
 # Annualized cost-of-carry rate
 b <-0.01
 # Barrier Value
 H <- 75
+# yearly drift
+drift<-r
+# Strike price
+strike<-90
+
 
 #######################################################################################
 # Step 1 - Simulate random paths with GBM process for the spot value until maturity T.
