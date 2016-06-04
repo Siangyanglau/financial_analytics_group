@@ -460,7 +460,7 @@ print(paste0(&quot;The price of vanilla option is &quot;, price_vanilla))</code>
 ##  0.02019197 
 ## 
 ## Description:
-##  Sat Jun  4 13:08:41 2016</code></pre>
+##  Sat Jun  4 13:12:12 2016</code></pre>
 <p>The price of the down-and-in call option is 0.0202 where a prespecified cash rebate is assumed to be 0.</p>
 </div>
 <div id="down-and-out-call-option" class="section level3">
@@ -490,12 +490,12 @@ print(paste0(&quot;The price of vanilla option is &quot;, price_vanilla))</code>
 ##  13.13477 
 ## 
 ## Description:
-##  Sat Jun  4 13:08:41 2016</code></pre>
+##  Sat Jun  4 13:12:12 2016</code></pre>
 <p>The price of the down-and-out call option is 13.4761 where a prespecified cash rebate is assumed to be 0.</p>
 </div>
 </div>
-<div id="part-3---evaluation-of-methods" class="section level2">
-<h2><span class="header-section-number">4.4</span> Part 3 - Evaluation of methods</h2>
+<div id="evaluation-of-methods" class="section level2">
+<h2><span class="header-section-number">4.4</span> Evaluation of methods</h2>
 <p><strong>Question:</strong> StandardBarrierOption assumes a continuous monitoring of the barrier instead of the discrete one (i.e. the time grid) of your Monte Carlo. Does this affect your Monte Carlo price? Is the difference between the Monte Carlo prices and the closed form solution affected by both Monte Carlo noise and the type of the barrier monitoring? Please comment.</p>
 <p>In simulation, due to the inability of Monte Carlo to simulate in continuous time, an option is priced under the assumption that it has Bermudan style, and thus only discrete exercise opportunities exist. So for example, if an American option is exercisable at any time t where 0 ≤ t ≤ T , we restrict the option such that it can be exercised only at a fixed set of exercise opportunities 0 &lt; t1 &lt; t2 &lt; . . . &lt; td, where d is the number of exercisable time steps.</p>
 </div>

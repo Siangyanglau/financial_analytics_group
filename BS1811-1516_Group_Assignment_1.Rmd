@@ -283,7 +283,7 @@ The price of the down-and-out call option is 13.4761 where a prespecified cash r
 
 
 
-## Part 3 - Evaluation of methods
+## Evaluation of methods
 
 **Question:** StandardBarrierOption assumes a continuous monitoring of the barrier instead of the discrete one (i.e. the time grid) of your Monte Carlo. Does this affect your Monte Carlo price? Is the difference between the Monte Carlo prices and the closed form solution affected by both Monte Carlo noise and the type of the barrier monitoring? Please comment.
 
