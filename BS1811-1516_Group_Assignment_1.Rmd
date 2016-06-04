@@ -239,7 +239,7 @@ print(paste0("The price of exotic down-and-in option is ", price_di))
 print(paste0("The price of exotic down-and-out option is ", price_do))
 ```
 
-The sum of prices of down-and-in and down-and-out options doesn't seem to agree with the price of vanilla option
+The sum of prices of down-and-in and down-and-out options doesn't seem to agree with the price of vanilla option. The price of down-and-in option is almost zero, which makes total sense since the strike price is 90 and current price is 100, if the contract knocks in when it is below 75 and you buy the asset at the strike price of 90, investors are losing the money for sure.
 
 ## Method 2 - R package fExoticOptions
 
@@ -263,6 +263,16 @@ means 30% volatility pa
 * K for an "In"-Barrier a prespecified cash rebate which is paid out at option expiration
 if the option has not been knocked in during its lifetime,for an "Out"-Barrier a prespecified cash rebate which is paid out at option expiration if the option has not been knocked out before its lifetime, a numerical value
 
+### Down-and-in call option
+
+```{r fExoticOptions_in}
+StandardBarrierOption(TypeFlag = "cdi", S = 100, X = 90,H = 75, K = 0, Time = 0.5, r = 0.01, b = 0.01, sigma = 0.25)
+```
+
+The price of the down-and-in call option is 0.0202 where a prespecified cash rebate is assumed to be 0.
+
+### Down-and-out call option
+
 ```{r fExoticOptions_out}
 
 StandardBarrierOption(TypeFlag = "cdo", S = 100, X = 90,H = 75, K = 0, Time = 0.5, r=0.01, b = 0.01, sigma = 0.25)
@@ -271,11 +281,7 @@ StandardBarrierOption(TypeFlag = "cdo", S = 100, X = 90,H = 75, K = 0, Time = 0.
 
 The price of the down-and-out call option is 13.4761 where a prespecified cash rebate is assumed to be 0.
 
-```{r fExoticOptions_in}
-StandardBarrierOption(TypeFlag = "cdi", S = 100, X = 90,H = 75, K = 0, Time = 0.5, r = 0.01, b = 0.01, sigma = 0.25)
-```
 
-The price of the down-and-in call option is 0.0202 where a prespecified cash rebate is assumed to be 0.
 
 ## Part 3 - Evaluation of methods
 

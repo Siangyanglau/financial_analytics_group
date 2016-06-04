@@ -418,7 +418,7 @@ print(paste0(&quot;The price of vanilla option is &quot;, price_vanilla))</code>
 <pre><code>## [1] &quot;The price of exotic down-and-in option is 0&quot;</code></pre>
 <pre class="r"><code>print(paste0(&quot;The price of exotic down-and-out option is &quot;, price_do))</code></pre>
 <pre><code>## [1] &quot;The price of exotic down-and-out option is 13.6762784206145&quot;</code></pre>
-<p>The sum of prices of down-and-in and down-and-out options doesn’t seem to agree with the price of vanilla option</p>
+<p>The sum of prices of down-and-in and down-and-out options doesn’t seem to agree with the price of vanilla option. The price of down-and-in option is almost zero, which makes total sense since the strike price is 90 and current price is 100, if the contract knocks in when it is below 75 and you buy the asset at the strike price of 90, investors are losing the money for sure.</p>
 </div>
 <div id="method-2---r-package-fexoticoptions" class="section level2">
 <h2><span class="header-section-number">4.3</span> Method 2 - R package fExoticOptions</h2>
@@ -433,33 +433,8 @@ print(paste0(&quot;The price of vanilla option is &quot;, price_vanilla))</code>
 <li><p>sigma is the annualized volatility of the underlying security, a numeric value; e.g. 0.3 means 30% volatility pa</p></li>
 <li><p>K for an “In”-Barrier a prespecified cash rebate which is paid out at option expiration if the option has not been knocked in during its lifetime,for an “Out”-Barrier a prespecified cash rebate which is paid out at option expiration if the option has not been knocked out before its lifetime, a numerical value</p></li>
 </ul>
-<pre class="r"><code>StandardBarrierOption(TypeFlag = &quot;cdo&quot;, S = 100, X = 90,H = 75, K = 0, Time = 0.5, r=0.01, b = 0.01, sigma = 0.25)</code></pre>
-<pre><code>## 
-## Title:
-##  Standard Barrier Option 
-## 
-## Call:
-##  StandardBarrierOption(TypeFlag = &quot;cdo&quot;, S = 100, X = 90, H = 75, 
-##      K = 0, Time = 0.5, r = 0.01, b = 0.01, sigma = 0.25)
-## 
-## Parameters:
-##           Value:
-##  TypeFlag cdo   
-##  S        100   
-##  X        90    
-##  H        75    
-##  K        0     
-##  Time     0.5   
-##  r        0.01  
-##  b        0.01  
-##  sigma    0.25  
-## 
-## Option Price:
-##  13.13477 
-## 
-## Description:
-##  Sat Jun  4 12:57:31 2016</code></pre>
-<p>The price of the down-and-out call option is 13.4761 where a prespecified cash rebate is assumed to be 0.</p>
+<div id="down-and-in-call-option" class="section level3">
+<h3><span class="header-section-number">4.3.1</span> Down-and-in call option</h3>
 <pre class="r"><code>StandardBarrierOption(TypeFlag = &quot;cdi&quot;, S = 100, X = 90,H = 75, K = 0, Time = 0.5, r = 0.01, b = 0.01, sigma = 0.25)</code></pre>
 <pre><code>## 
 ## Title:
@@ -485,8 +460,39 @@ print(paste0(&quot;The price of vanilla option is &quot;, price_vanilla))</code>
 ##  0.02019197 
 ## 
 ## Description:
-##  Sat Jun  4 12:57:31 2016</code></pre>
+##  Sat Jun  4 13:08:41 2016</code></pre>
 <p>The price of the down-and-in call option is 0.0202 where a prespecified cash rebate is assumed to be 0.</p>
+</div>
+<div id="down-and-out-call-option" class="section level3">
+<h3><span class="header-section-number">4.3.2</span> Down-and-out call option</h3>
+<pre class="r"><code>StandardBarrierOption(TypeFlag = &quot;cdo&quot;, S = 100, X = 90,H = 75, K = 0, Time = 0.5, r=0.01, b = 0.01, sigma = 0.25)</code></pre>
+<pre><code>## 
+## Title:
+##  Standard Barrier Option 
+## 
+## Call:
+##  StandardBarrierOption(TypeFlag = &quot;cdo&quot;, S = 100, X = 90, H = 75, 
+##      K = 0, Time = 0.5, r = 0.01, b = 0.01, sigma = 0.25)
+## 
+## Parameters:
+##           Value:
+##  TypeFlag cdo   
+##  S        100   
+##  X        90    
+##  H        75    
+##  K        0     
+##  Time     0.5   
+##  r        0.01  
+##  b        0.01  
+##  sigma    0.25  
+## 
+## Option Price:
+##  13.13477 
+## 
+## Description:
+##  Sat Jun  4 13:08:41 2016</code></pre>
+<p>The price of the down-and-out call option is 13.4761 where a prespecified cash rebate is assumed to be 0.</p>
+</div>
 </div>
 <div id="part-3---evaluation-of-methods" class="section level2">
 <h2><span class="header-section-number">4.4</span> Part 3 - Evaluation of methods</h2>
