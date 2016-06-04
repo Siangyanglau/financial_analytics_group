@@ -1,0 +1,11 @@
+base
+readr
+dplyr
+tidyr
+knitr
+ggplot2
+timeDate
+timeSeries
+fBasics
+fOptions
+fExoticOptions
