@@ -288,7 +288,7 @@ StandardBarrierOption(TypeFlag = "cdo", S = 100, X = 90,H = 75, K = 0, Time = 0.
 
 ```
 
-The price of the down-and-out call option is 13.4761 where a prespecified cash rebate is assumed to be 0.
+The price of the down-and-out call option is 13.13477 where a prespecified cash rebate is assumed to be 0.
 
 
 
