@@ -113,6 +113,7 @@ the value of the knock-in option.
 
 ## Method 1 - Monte Carlo Method 
 
+### Analysis 
 The procedures of applying monte carlo method on barrier options pricing is summarised below:
 
 * Step 1 - Simulate random paths with GBM process for the spot value until maturity T.
@@ -232,11 +233,25 @@ price_di <- mean(discounted_payoff_di)
 price_do <- mean(discounted_payoff_do)
 ```
 
+### Results 
+
+The payoffs at maturity and prices of options are shown below.
 
 ```{r results_comparison}
 # Check: vanilla option price = knock-out option price + knock-in option price 
+#Vanilla Option
+plot(RF_GBM_vanilla[,ncol(RF_GBM_vanilla)],payoff_vanilla,pch=19,main="Payoff of Vanilla Option", xlab="Price at Maturity", ylab="Payoff")
+abline(v=start_value,col=4)
 print(paste0("The price of vanilla option is ", price_vanilla))
+
+#Down-and-in Option
+plot(RF_GBM_di[,ncol(RF_GBM_di)],payoff_di,pch=19,main="Payoff of Down-and-in Option", xlab="Price at Maturity", ylab="Payoff")
+abline(v=start_value,col=4)
 print(paste0("The price of exotic down-and-in option is ", price_di))
+
+#Down-and-out Option
+plot(RF_GBM_do[,ncol(RF_GBM_do)],payoff_do,pch=19,main="Payoff of Down-and-out Option", xlab="Price at Maturity", ylab="Payoff")
+abline(v=start_value,col=4)
 print(paste0("The price of exotic down-and-out option is ", price_do))
 ```
 
