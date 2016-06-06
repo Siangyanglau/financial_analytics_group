@@ -264,6 +264,14 @@ means 30% volatility pa
 * K for an "In"-Barrier a prespecified cash rebate which is paid out at option expiration
 if the option has not been knocked in during its lifetime,for an "Out"-Barrier a prespecified cash rebate which is paid out at option expiration if the option has not been knocked out before its lifetime, a numerical value
 
+### Vanilla option
+
+```{r fExoticOptions_vanilla}
+GBSOption(TypeFlag="c",S=100,X=90,Time=0.5,r=0.01,b=0.01,sigma=0.25)
+```
+
+The price of the vanilla call option is 13.15496 where a prespecified cash rebate is assumed to be 0.
+
 ### Down-and-in call option
 
 ```{r fExoticOptions_in}
