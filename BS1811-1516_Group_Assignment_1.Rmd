@@ -185,31 +185,33 @@ grid()
 
 #########################################################
 # Step 2 - Decide whether each path is knocked in or out 
-# and thus determine the final payoff of each path.
+# and thus determine the final payoff of each path and 
+# calculate the payoff at maturity
 #########################################################
 #Vanilla Opiton
-RF_GBM_vanilla <- RF_GBM
+RF_GBM_at_maturity<-RF_GBM[,ncol(RF_GBM)]
+payoff_vanilla<-pmax(RF_GBM_at_maturity-strike,0)
+
 
 #Exotic Option - down-and-in
-RF_GBM_di <- RF_GBM[RF_GBM[,ncol(RF_GBM)]<H,]
+if(any(RF_GBM < H)){
+  payoff_di <-0
+}else{
+  payoff_di <-pmax (RF_GBM_at_maturity - strike, 0)
+}
+
 
 #Exotic Option - down-and-out
-RF_GBM_do <- RF_GBM[RF_GBM[,ncol(RF_GBM)]>=H,]
+if(any(RF_GBM > H)){
+  payoff_do <- pmax (RF_GBM_at_maturity - strike, 0)
+}else{
+  payoff_do <- 0
+}
 
-############################################
-# Step 3 - Calculate the payoff at maturity. 
-############################################
-#Vanilla Opiton
-payoff_vanilla <- pmax(RF_GBM_vanilla[,ncol(RF_GBM_vanilla)] - strike,0)
 
-#Exotic Option - down-and-in
-payoff_di <- pmax(RF_GBM_di[,ncol(RF_GBM_di)] - strike,0)
-
-#Exotic Option - down-and-out
-payoff_do <- pmax(RF_GBM_do[,ncol(RF_GBM_do)] - strike,0)
 
 ###################################################################
-# Step 4 - Discount all future payoff distribution of values to t0.
+# Step 3 - Discount all future payoff distribution of values to t0.
 ###################################################################
 #Vanilla Opiton
 discounted_payoff_vanilla <- exp(-r*T)*payoff_vanilla
