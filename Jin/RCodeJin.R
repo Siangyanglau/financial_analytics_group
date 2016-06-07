@@ -135,7 +135,8 @@ mu<-0
 T<-5
 r<-0.01
 
-dt<-130/260  #to get nSteps = 10, 130 is chosen. 260 is the number of business days
+#each time units d/dt = #Evaluation times in units of year 
+dt<-10/260  #to get nSteps = 10, 130 is chosen. 260 is the number of business days
 nPaths<-10000
 nSteps<-T/dt  # 5/(130/260) = 10
 
@@ -144,50 +145,43 @@ nSteps<-T/dt  # 5/(130/260) = 10
 dw<-matrix(rnorm(nPaths*nSteps,0,1),nPaths,nSteps)
 S<-S0*exp(apply((r-sigma^2/2)*dt + sigma*sqrt(dt)*dw,1,cumsum))
 S<-rbind(S0,S)
-# matplot(S[,1:100],type="l")
+matplot(S[,1:100],type="l")
+
+#Note that W, and consequently its infinitesimal increment dW, 
+#represents the only source of uncertainty in the price history of the stock.
 
 ###############################################################################
 # calculate MtM distributions for a Call option - BS closed formula
 
 strike<-12
-time<- T - seq(0,T,dt)
+time<- T - seq(0,T,dt)   #working backwards as advised in the project notes. i should have a reading every 10 days
 
+# from lecture: the expected payoff in the future is the MtM distribution
 C<-S*0
 for (i in 1:nrow(S)){
     C[i,]<-GBSOption(TypeFlag="c",S=S[i,],X=strike,Time=time[i],r=r,b=r,sigma=sigma)@price
 }
 
-#where is the Mtm distribution values? is there a diagram I can draw?
-#need to watch lecture videos
+#using my own code of RF_GBM
+#need to change RF_GBM, which is discounted steps to expected future payoffs
+#RF_GBM is the transpose of S
 
+RF_GBMT <- t(RF_GBM)
 
+C<-S*0
+for (i in 1:nrow(RF_GBMT)){
+  C[i,]<-GBSOption(TypeFlag="c",S=RF_GBMT[i,],X=strike,Time=time[i],r=r,b=r,sigma=sigma)@price
+}
 
+#yess!!!!!! i hope this is right.
+#plot to check, should be symmetrical
+# plot me results
+defaultT<-seq(0,T,dt)
+par(mfrow=c(1,2))
+matplot(defaultT,C[,1:100],type="l",ylab="C - BS, price [$]",
+        xlab="Default Dates [y]",main="Closed Form",ylim=c(min(C),max(C)))
 
+###############################################################################
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#(iv)
 
