@@ -195,23 +195,29 @@ payoff_vanilla<-pmax(RF_GBM_vanilla-strike,0)
 
 #Exotic Option - down-and-in
 
-RF_GBM_di <- RF_GBM[RF_GBM[,ncol(RF_GBM)]<=H,]
+RF_GBM_di<-RF_GBM[,ncol(RF_GBM)]
 
-if(any(RF_GBM < H)){
-  payoff_di <-0
+if(any(RF_GBM > H)){
+  payoff_di <-as.list(rep(0, 10000))
+  
 }else{
   payoff_di <-pmax (RF_GBM[,ncol(RF_GBM)] - strike, 0)
 }
 
+payoff_di<-as.numeric(payoff_di)
 
 #Exotic Option - down-and-out
-RF_GBM_do <- RF_GBM[RF_GBM[,ncol(RF_GBM)]>H,]
+RF_GBM_do<-RF_GBM[,ncol(RF_GBM)]
+
 
 if(any(RF_GBM > H)){
   payoff_do <- pmax (RF_GBM[,ncol(RF_GBM)] - strike, 0)
 }else{
   payoff_do <- 0
 }
+
+
+
 
 
 
@@ -252,12 +258,12 @@ abline(v=start_value,col=4)
 print(paste0("The price of vanilla option is ", price_vanilla))
 
 #Down-and-in Option   #here is the prolem, RF_GBM_di has been removed
-plot(RF_GBM_di[,ncol(RF_GBM_di)],payoff_di,pch=19,main="Payoff of Down-and-in Option", xlab="Price at Maturity", ylab="Payoff")
+plot(RF_GBM_di,payoff_di,pch=19,main="Payoff of Down-and-in Option", xlab="Price at Maturity", ylab="Payoff")
 abline(v=start_value,col=4)
 print(paste0("The price of exotic down-and-in option is ", price_di))
 
 #Down-and-out Option
-plot(RF_GBM_do[,ncol(RF_GBM_do)],payoff_do,pch=19,main="Payoff of Down-and-out Option", xlab="Price at Maturity", ylab="Payoff")
+plot(RF_GBM_do,payoff_do,pch=19,main="Payoff of Down-and-out Option", xlab="Price at Maturity", ylab="Payoff")
 abline(v=start_value,col=4)
 print(paste0("The price of exotic down-and-out option is ", price_do))
 ```
