@@ -195,7 +195,7 @@ payoff_vanilla<-pmax(RF_GBM_vanilla-strike,0)
 
 #Exotic Option - down-and-in
 
-RF_GBM_di <- RF_GBM[RF_GBM[,ncol(RF_GBM)]]
+RF_GBM_di <- RF_GBM[RF_GBM[,ncol(RF_GBM)]<=H,]
 
 if(any(RF_GBM < H)){
   payoff_di <-0
