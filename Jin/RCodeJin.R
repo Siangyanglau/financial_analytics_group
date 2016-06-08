@@ -1,6 +1,8 @@
 library(quantmod)
 library(fOptions)
 
+rm(list=ls()) 
+
 #### Question 1 (i) #####
 #### Black-scholes equation
 
@@ -38,11 +40,11 @@ GBSOption(TypeFlag = "c",S = spot,X = strike,Time = T,r = r, b = r,sigma = vola)
 # Simulation period 
 T
 # Step in 10days with 260 day-count convention
-tStep<-10/260  #does he mean 360 days?
+tStep<-10/260
 # Scenarios
 nPaths<-10000
 #Evaluation times in units of year  
-time<-seq(0,T,tStep)
+time<-seq(0,T,tStep) 
 
 set.seed(12345)
 # Parameters (S0, vola, drift) 
@@ -74,8 +76,10 @@ pass_rand<-t(apply(pass_rand,1,cumsum))
 pass_drift<-matrix(rep(exp(-0.5*time*vola^2+time*drift),nPaths),nrow=nPaths,ncol=length(time), byrow=TRUE)
 #Generation of the paths (scaling the random component by tStep)
 RF_GBM<-start_value*exp(pass_rand*vola*sqrt(tStep))*pass_drift
+RF_GBM<-start_value*exp(pass_rand*vola*sqrt(tStep))
 rownames(RF_GBM)<-paste("history",as.character(seq(1,nPaths,1)),sep="")
 colnames(RF_GBM)<-paste(as.character(time),"y",sep="")  
+
 
 # Here we make checks
 par(mfrow=c(1,2))
@@ -111,6 +115,7 @@ discount<-exp(-r*T)*pmax(0,ST-K)
 mean(discount)
 
 #ans = 6.121821
+#can i assume that drift is zero? if drift is zero, then price = 3.368507 
 
 ##Question 1 (iii)
 
@@ -118,14 +123,6 @@ mean(discount)
 #derive MtM (Mark- to-Market) distributions for the call option over time.
 #Mark to market (MTM) is a measure of the fair value of accounts that can change over time
 
-###############################################################################
-
-rm(list=ls())
-gc()
-
-###############################################################################
-# source libraries
-library(fOptions)
 
 ###############################################################################
 # define initial/valuation input
@@ -161,11 +158,14 @@ C<-S*0
 for (i in 1:nrow(S)){
     C[i,]<-GBSOption(TypeFlag="c",S=S[i,],X=strike,Time=time[i],r=r,b=r,sigma=sigma)@price
 }
+C0<-exp(-r*T)*mean(pmax(S[nrow(S),] - strike,0))
 
 #using my own code of RF_GBM
 #need to change RF_GBM, which is discounted steps to expected future payoffs
-#RF_GBM is the transpose of S
+#RF_GBM is the transpose of S, and also reverse the columns. 
+#because MtM looks at time to maturity, and RF_GBM is time away from today. 
 
+#transform RF_GBM into the right form. yes, now it is starting from today to end of path.
 RF_GBMT <- t(RF_GBM)
 
 C<-S*0
@@ -173,15 +173,72 @@ for (i in 1:nrow(RF_GBMT)){
   C[i,]<-GBSOption(TypeFlag="c",S=RF_GBMT[i,],X=strike,Time=time[i],r=r,b=r,sigma=sigma)@price
 }
 
+#calculate the expected price of call option
+C0<-exp(-r*T)*mean(pmax(RF_GBMT[nrow(RF_GBMT),] - strike,0))
+
+#price of call option is 3.368507, same as above
+
 #yess!!!!!! i hope this is right.
-#plot to check, should be symmetrical
 # plot me results
 defaultT<-seq(0,T,dt)
 par(mfrow=c(1,2))
-matplot(defaultT,C[,1:100],type="l",ylab="C - BS, price [$]",
+matplot(defaultT,C[,1:100],type="l",ylab="Call Option - Black Scholes, price [$]",
         xlab="Default Dates [y]",main="Closed Form",ylim=c(min(C),max(C)))
+
 
 ###############################################################################
 
-#(iv)
+#(iv) the MtM distribution is C - code is in CVA Example
+#calculate expected exposure
+#calculate he Potential Future Exposure (PFE) at 95% confidence level 
+# calculate the CVA price using counterparty spread curve:
+
+#########################################################################################################
+# Calculate EE, PFE, CVA
+#########################################################################################################
+
+#MTM time is time away from today, not time to maturity
+tStep<-seq(0,T,dt)
+
+MtM <-RF_GBMT
+EE<-apply(pmax(MtM,0),1, mean)
+PFE<-apply(pmax(MtM,0),1,quantile,0.95)
+par(mfrow=c(1,2))
+plot(tStep,EE,type="l", col=2,lwd=3)
+plot(tStep,PFE,type="l", col=2,lwd=3)
+
+# here the CDS curve info
+cdsT<-seq(1,10,1)
+cds<-c(92,104,112,117,120,122,124,125,126,127)
+par(mfrow=c(1,1))
+plot(cdsT,cds,type="l")
+
+#Spline function
+#NB: You need the CDS spread at each repricing date, i.e. from t0 up to T with 10d step. 
+#Use the above CDS spread curve and a natural spline [R function: spline() ] 
+#to get the CDS spreads for CVA pricing. The Loss Given Default (LGD) equals 40%.
+
+t<-tStep
+r<-0.01
+DF<-exp(-r*t)
+LGD<-0.4
+# Basel formula
+CDS_curve<-spline(cdsT, cds, xout=t)
+temp<-c()
+for (i in 2:length(t)){
+  temp<-c(temp,max(0,exp(-(CDS_curve$y[i-1]/10000*CDS_curve$x[i-1])/LGD)-
+                     exp(-(CDS_curve$y[i]/10000*CDS_curve$x[i])/LGD))*
+            (EE[i-1]*DF[i-1]+EE[i]*DF[i])*0.5)
+}
+
+CVABasel<-LGD*sum(temp)
+print(paste("The CVA (using Basel formula) for the uncollateralized trade equals ",CVABasel))
+
+#answer = 0.612151193329633
+
+#CVA is a price. It is now a considerable part of the PnL of any financial institution
+#CVA is the cost of buying protection on the counterparty that pays the 
+#portfolio value in case of default
+
+
 
