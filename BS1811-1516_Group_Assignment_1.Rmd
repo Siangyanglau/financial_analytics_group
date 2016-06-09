@@ -613,7 +613,7 @@ GBM<-function(x0,drift,vola,dt,N_Steps,N_Paths){
 In this part, the volatility is estimated with 22 days, 520 days, EWMA 44 days and GK 66days estimation respectively. The volatility estimation over 10 years time is plotted below.
 
 ###i.),ii.),iii.),iv.)
-```{r, warning=FALSE,results='hide'}
+```{r, warning=FALSE}
 ##################################################################################
 # Calculate volatilities for IBM
 ##################################################################################
