@@ -1,0 +1,68 @@
+#### Question 1 (ii) ######
+#### Monte Carlo equation#
+#
+# Step in 10days with 260 day-count convention#
+tStep<-10/260#
+# Scenarios#
+nPaths<-10000#
+#Evaluation times in units of year  #
+time<-seq(0,T,tStep) #
+#
+set.seed(12345)#
+# Parameters (S0, vola, drift) #
+#S0 = start value#
+#
+#start matrix#
+RF_GBM<-matrix(0,nrow=nPaths,ncol=length(time))#
+#
+#We generate random numbers N(0,1)#
+#Always better to generate the innovations in a vectorial fashion and then "distribute" them#
+#rnorm(n, mean = , sd = ) is used to generate n normal random numbers with arguments mean and sd#
+#scale, with default settings, will calculate the mean and standard deviation of the entire vector, #
+#then "scale" each element by those values by subtracting the mean and dividing by the sd. #
+#(If you use  scale(x, scale=FALSE), it will only subtract the mean but not divide by the std deviation.)#
+#
+pass_rand<-rnorm(nPaths*(length(time)-1)) #generate 10k numbers#
+pass_rand_first<-rnorm(nPaths*(length(time)-1)) #second set for part (v)#
+pass_rand<-matrix(pass_rand,nrow=nPaths,ncol=(length(time)-1)) #distribute it to matrix#
+pass_rand<-scale(pass_rand,center = TRUE,scale = TRUE)#
+#
+#Adding the starting value#
+pass_rand<-cbind(rep(0,nPaths),pass_rand)#
+#Accrueting the innovations#
+pass_rand<-t(apply(pass_rand,1,cumsum))#
+#drift_matrix: x=x0*exp(mu*t-vola^2*t/2)*exp(vola*N(0,1)*sqrt(t))#
+pass_drift<-matrix(rep(exp(-0.5*time*vola^2+time*drift),nPaths),nrow=nPaths,ncol=length(time),#
+                   byrow=TRUE)#
+#Generation of the paths (scaling the random component by tStep)#
+RF_GBM<-S0*exp(pass_rand*vola*sqrt(tStep))*pass_drift#
+rownames(RF_GBM)<-paste("history",as.character(seq(1,nPaths,1)),sep="")#
+colnames(RF_GBM)<-paste(as.character(time),"y",sep="")  #
+# Here we make checks#
+par(mfrow=c(1,2))#
+par(mar=c(1,1,1,1))#
+check_sd<-apply(RF_GBM,2,sd)/sqrt(time)#
+plot(time,check_sd,ylim = c(0.15,0.40))#
+abline(h=vola,col=2,lwd=2)#
+check_mean<-apply(RF_GBM,2,mean)#
+plot(time,check_mean,type="l",lwd=4)  #
+abline(a = start_value ,b = drift,col=2,lwd=2)#
+#
+par(mfrow=c(1,1))#
+matplot(time,t(RF_GBM)[,1:100],type="l",xlab="t(y)",ylab="RF",main="GBM process")#
+points(time,apply(t(RF_GBM),1,mean),type="l",col=1,lwd=4)#
+points(time,apply(t(RF_GBM),1,quantile,0.05),type="l",col=2,lwd=4)#
+points(time,apply(t(RF_GBM),1,quantile,0.95),type="l",col=2,lwd=4)#
+grid()#
+#
+#find the column names where expiry is 5 and glue expiry with y=years.#
+expiry<-5 #
+ind<-which(colnames(RF_GBM)==paste0(expiry,"y"))#
+K<-12#
+ST<-RF_GBM[,ind] #10thousand values for ending paths#
+plot(ST,pmax(0,ST-K))#
+#
+#discount all future payoffs(slide 22)#
+discount<-exp(-drift*T)*pmax(0,ST-K)#
+#Calculate the mean of discounted payoff distribution#
+mean(discount)
