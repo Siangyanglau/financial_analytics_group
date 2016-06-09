@@ -29,11 +29,7 @@ library(fExoticOptions)
 Project: Part I consists of questions from the topics of CVA Pricing, Option Pricing and Backtesting. The assignment explicitly requires us to perform the calculation and analysis in R. 
 
 For each topic, the questions require us to:
-  1) create and implement formula to derive distributions and theryby calculate CVA price
- 
-  2) compare the methods of Monte Carlo and closed form solution for pricing barrier options 
- 
-  3) conduct backtesting for IBM historical data for the last 10 years and estimate historical volatility.
+  1) create and implement formula to derive distributions and theryby calculate CVA price, 2) compare the methods of Monte Carlo and closed form solution for pricing barrier options, 3) conduct backtesting for IBM historical data for the last 10 years and estimate historical volatility.
 
 This report attempts to answer the questions in the order. Each section presents the relevant R code used in the analysis to answer the question and explanation.
 
