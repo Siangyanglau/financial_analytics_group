@@ -9,36 +9,26 @@ rm(list=ls())
 #inputs for BS formula
 
 S0 <- 10  #starting equity price
-K <-12    # strike price
+strike <-12    # strike price
 vola <- 0.3  #implied volatility
-r<- 0.01 #the risk free interest rate
+drift<- 0.01 #the risk free interest rate
 T<- 5    #maturity of option in years 
 
 #the BS formula manually = ans = 2.157715
 
-d1 <- 1/(vola*sqrt(T))*(log(S0/K)+(r+0.5*vola^2)*(T))
+d1 <- 1/(vola*sqrt(T))*(log(S0/strike)+(drift+0.5*vola^2)*(T))
 d2 <- d1 - vola*sqrt(T)
 
-price = pnorm(d1,0,1)*S0 - pnorm(d2)*K*exp(-r*T)
-
-#BS using fOptions
-spot<-10
-r<-0.01
-T<-5
-vola<-0.3
-strike<-12
+price = pnorm(d1,0,1)*S0 - pnorm(d2)*strike*exp(-drift*T)
 
 # Price with Black Scholes formula (load the fOptions R standard package)
 # ans = 2.157716
-library(fOptions)
-GBSOption(TypeFlag = "c",S = spot,X = strike,Time = T,r = r, b = r,sigma = vola)@price
+GBSOption(TypeFlag = "c",S = S0,X = strike,Time = T,r = drift, b = drift,sigma = vola)@price
 
 
 #### Question 1 (ii) #####
 #### Monte Carlo equation
 
-# Simulation period 
-T
 # Step in 10days with 260 day-count convention
 tStep<-10/260
 # Scenarios
@@ -48,13 +38,9 @@ time<-seq(0,T,tStep)
 
 set.seed(12345)
 # Parameters (S0, vola, drift) 
-start_value<-S0
-vola <- 0.3  #implied volatility
-drift <- 0.01
+#S0 = start value
 
-
-#Definition of the RF box  
-#matrix to show path
+#start matrix
 RF_GBM<-matrix(0,nrow=nPaths,ncol=length(time))
 
 #We generate random numbers N(0,1)
@@ -65,6 +51,7 @@ RF_GBM<-matrix(0,nrow=nPaths,ncol=length(time))
 #(If you use  scale(x, scale=FALSE), it will only subtract the mean but not divide by the std deviation.)
 
 pass_rand<-rnorm(nPaths*(length(time)-1)) #generate 10k numbers
+pass_rand_first<-rnorm(nPaths*(length(time)-1)) #second set for part (v)
 pass_rand<-matrix(pass_rand,nrow=nPaths,ncol=(length(time)-1)) #distribute it to matrix
 pass_rand<-scale(pass_rand,center = TRUE,scale = TRUE)
 
@@ -76,7 +63,7 @@ pass_rand<-t(apply(pass_rand,1,cumsum))
 pass_drift<-matrix(rep(exp(-0.5*time*vola^2+time*drift),nPaths),nrow=nPaths,ncol=length(time),
                    byrow=TRUE)
 #Generation of the paths (scaling the random component by tStep)
-RF_GBM<-start_value*exp(pass_rand*vola*sqrt(tStep))*pass_drift
+RF_GBM<-S0*exp(pass_rand*vola*sqrt(tStep))*pass_drift
 rownames(RF_GBM)<-paste("history",as.character(seq(1,nPaths,1)),sep="")
 colnames(RF_GBM)<-paste(as.character(time),"y",sep="")  
 
@@ -98,11 +85,7 @@ points(time,apply(t(RF_GBM),1,quantile,0.05),type="l",col=2,lwd=4)
 points(time,apply(t(RF_GBM),1,quantile,0.95),type="l",col=2,lwd=4)
 grid()
 
-#compute payoff at maturity (slide 21)
-#maturity = 5yrs
-#S(0) = 10, K=12
-
-#find the colum names where expiry is 5 and glue expiry with y=years.
+#find the column names where expiry is 5 and glue expiry with y=years.
 expiry<-5 
 ind<-which(colnames(RF_GBM)==paste0(expiry,"y"))
 K<-12
@@ -110,7 +93,7 @@ ST<-RF_GBM[,ind] #10thousand values for ending paths
 plot(ST,pmax(0,ST-K))
 
 #discount all future payoffs(slide 22)
-discount<-exp(-r*T)*pmax(0,ST-K)
+discount<-exp(-drift*T)*pmax(0,ST-K)
 #Calculate the mean of discounted payoff distribution
 mean(discount)
 
@@ -127,22 +110,21 @@ mean(discount)
 ###############################################################################
 # define initial/valuation input
 S0<-10
-sigma<-0.3
+s<-0.3
 mu<-0
 T<-5
 r<-0.01
 
 #each time units d/dt = #Evaluation times in units of year 
 dt<-10/260  #to get nSteps = 10, 130 is chosen. 260 is the number of business days
-nPaths<-10000
 nSteps<-T/dt  # 5/(130/260) = 10
 
 ###############################################################################
 # simulate Stock random paths
-dw<-matrix(rnorm(nPaths*nSteps,0,1),nPaths,nSteps)
-S<-S0*exp(apply((r-sigma^2/2)*dt + sigma*sqrt(dt)*dw,1,cumsum))
-S<-rbind(S0,S)
-matplot(S[,1:100],type="l")
+#dw<-matrix(rnorm(nPaths*nSteps,0,1),nPaths,nSteps)
+#S<-S0*exp(apply((drift-vola^2/2)*dt + vola*sqrt(dt)*dw,1,cumsum))
+#S<-rbind(S0,S)
+#matplot(S[,1:100],type="l")
 
 #Note that W, and consequently its infinitesimal increment dW, 
 #represents the only source of uncertainty in the price history of the stock.
@@ -154,14 +136,11 @@ strike<-12
 time<- T - seq(0,T,dt)   #working backwards as advised in the project notes. i should have a reading every 10 days
 
 # from lecture: the expected payoff in the future is the MtM distribution
-C<-S*0
-for (i in 1:nrow(S)){
-    C[i,]<-GBSOption(TypeFlag="c",S=S[i,],X=strike,Time=time[i],r=r,b=r,sigma=sigma)@price
-}
-C0<-exp(-r*T)*mean(pmax(S[nrow(S),] - strike,0))
-
-#MtM shouldn't be discounted to present value - i think, so it should be:
-C0<-mean(pmax(S[nrow(S),] - strike,0))
+#C<-S*0
+#for (i in 1:nrow(S)){
+#    C[i,]<-GBSOption(TypeFlag="c",S=S[i,],X=strike,Time=time[i],r=r,b=r,sigma=vola)@price
+#}
+#C0<-exp(-r*T)*mean(pmax(S[nrow(S),] - strike,0))
 
 #using my own code of RF_GBM
 #need to change RF_GBM, which is discounted steps to expected future payoffs
@@ -173,13 +152,11 @@ RF_GBMT <- t(RF_GBM)
 
 C<-S*0
 for (i in 1:nrow(RF_GBMT)){
-  C[i,]<-GBSOption(TypeFlag="c",S=RF_GBMT[i,],X=strike,Time=time[i],r=r,b=r,sigma=sigma)@price
+  C[i,]<-GBSOption(TypeFlag="c",S=RF_GBMT[i,],X=strike,Time=time[i],r=r,b=r,sigma=vola)@price
 }
+C0<-exp(-r*T)*mean(pmax(S[nrow(S),] - strike,0))
 
 
-#price of call option is 3.368507, same as above
-
-#yess!!!!!! i hope this is right.
 # plot me results
 defaultT<-seq(0,T,dt)
 par(mfrow=c(1,2))
@@ -189,18 +166,11 @@ matplot(defaultT,C[,1:100],type="l",ylab="Call Option - Black Scholes, price [$]
 
 ###############################################################################
 
-#(iv) the MtM distribution is C - code is in CVA Example
-#calculate expected exposure
-#calculate he Potential Future Exposure (PFE) at 95% confidence level 
-# calculate the CVA price using counterparty spread curve:
-
-#########################################################################################################
+#(iv) the MtM distribution is C matrix
 # Calculate EE, PFE, CVA
-#########################################################################################################
 
 #MTM time is time away from today, not time to maturity
 tStep<-seq(0,T,dt)
-
 MtM <-C
 
 EE<-apply(pmax(MtM,0),1, mean)
@@ -215,10 +185,6 @@ cds<-c(92,104,112,117,120)
 par(mfrow=c(1,1))
 plot(cdsT,cds,type="l")
 
-#Spline function
-#NB: You need the CDS spread at each repricing date, i.e. from t0 up to T with 10d step. 
-#Use the above CDS spread curve and a natural spline [R function: spline() ] 
-#to get the CDS spreads for CVA pricing. The Loss Given Default (LGD) equals 40%.
 
 t<-tStep
 r<-0.01
@@ -237,58 +203,78 @@ CVABasel<-LGD*sum(temp)
 print(paste("The CVA (using Basel formula) for the uncollateralized trade equals ",CVABasel))
 
 #answer = 0.12130784488567
-#YES!!!
-
-#CVA is a price. It is now a considerable part of the PnL of any financial institution
-#CVA is the cost of buying protection on the counterparty that pays the 
-#portfolio value in case of default
 
 #########################################################################################################
 #(v) new option!
 
-S0<-10
-sigma<-0.3
-mu<-0
-T<-5
-r<-0.01
+#S0<-10
+#sigma<-0.3
+#mu<-0
+#T<-5
+#r<-0.01
 
 #each time units d/dt = #Evaluation times in units of year 
-dt<-10/260  #to get nSteps = 10, 130 is chosen. 260 is the number of business days
-nPaths<-10000
-nSteps<-T/dt  # 5/(130/260) = 10
+#dt<-10/260  #to get nSteps = 10, 130 is chosen. 260 is the number of business days
+#nPaths<-10000
+#nSteps<-T/dt  # 5/(130/260) = 10
 #calculate MtM2
 
 #this is the first dw used for the first option.
-pass_rand<-rnorm(nPaths*(length(time)-1)) #generate 10k numbers
-pass_rand<-matrix(pass_rand,nrow=nPaths,ncol=(length(time)-1)) #distribute it to matrix
-pass_rand<-scale(pass_rand,center = TRUE,scale = TRUE)
+pass_rand_first
 
 #to find the second dw2
+rho <-0.7
+correlatedValue = function(x, r){
+  r2 = r**2
+  ve = 1-r2
+  SD = sqrt(ve)
+  e  = rnorm(length(x), mean=0, sd=SD)
+  y  = r*x + e
+  return(y)
+}
+x = pass_rand_first
+pass_rand_two = correlatedValue(x=x, r=rho)
+pass_rand_two<-matrix(pass_rand_two,nrow=nPaths,ncol=(length(time)-1)) #distribute it to matrix
+pass_rand_two<-scale(pass_rand_two,center = TRUE,scale = TRUE)
+pass_rand_two<-cbind(rep(0,nPaths),pass_rand_two)
+pass_rand_two<-t(apply(pass_rand_two,1,cumsum))
+pass_drift<-matrix(rep(exp(-0.5*time*vola^2+time*drift),nPaths),nrow=nPaths,ncol=length(time),
+                   byrow=TRUE)
+RF_GBM2<-S0*exp(pass_rand_two*vola*sqrt(tStep))*pass_drift
+rownames(RF_GBM2)<-paste("history",as.character(seq(1,nPaths,1)),sep="")
+colnames(RF_GBM2)<-paste(as.character(time),"y",sep="")  
+
+expiry<-5 
+ind<-which(colnames(RF_GBM2)==paste0(expiry,"y"))
+K<-12
+ST<-RF_GBM[,ind] #10thousand values for ending paths
+plot(ST,pmax(0,ST-K))
+
+# Here we make checks
+par(mfrow=c(1,2))
+par(mar=c(1,1,1,1))
+check_sd<-apply(RF_GBM,2,sd)/sqrt(time)
+plot(time,check_sd,ylim = c(0.15,0.40))
+abline(h=vola,col=2,lwd=2)
+check_mean<-apply(RF_GBM,2,mean)
+plot(time,check_mean,type="l",lwd=4)  
+abline(a = start_value ,b = drift,col=2,lwd=2)
+
+par(mfrow=c(1,1))
+matplot(time,t(RF_GBM)[,1:100],type="l",xlab="t(y)",ylab="RF",main="GBM process")
+points(time,apply(t(RF_GBM),1,mean),type="l",col=1,lwd=4)
+points(time,apply(t(RF_GBM),1,quantile,0.05),type="l",col=2,lwd=4)
+points(time,apply(t(RF_GBM),1,quantile,0.95),type="l",col=2,lwd=4)
+grid()
 
 
 
 
-# generate correlated stock price paths, with correlation of 0.7
-# use mtvnorm to generate 10,000 values [dW1dW2 = ρdt]
+RF_GBM2T<-t(RF_GBM2)
 
-dt<-10/260
-rho = 0.7
-
-require(MASS)
-out <- mvrnorm(10000, mu = c(0,0), 
-               Sigma = matrix(c(1,rho,rho,1), ncol = 2), 
-               empirical = TRUE)
-cor(out[,1], out[,2])
-
-dw1<-matrix(out[,1],nrow=nPaths,ncol=(length(time)-1))
-dw2<-matrix(out[,2],nrow=nPaths,ncol=(length(time)-1))
-
-S3<-S0*exp(apply((r-sigma^2/2)*dt + sigma*sqrt(dt)*dw1,1,cumsum))
-S3<-rbind(S0,S3)
-
-C3<-S3*0
+C3<-RF_GBM2T*0
 for (i in 1:nrow(S3)){
-  C3[i,]<-GBSOption(TypeFlag="c",S=S3[i,],X=12,Time=time[i],r=r,b=r,sigma=sigma)@price
+  C3[i,]<-GBSOption(TypeFlag="c",S=RF_GBM2T[i,],X=12,Time=time[i],r=r,b=r,sigma=sigma)@price
 }
 
 S4<-S0*exp(apply((r-sigma^2/2)*dt + sigma*sqrt(dt)*dw2,1,cumsum))
