@@ -132,8 +132,8 @@ nSteps<-T/dt  # 5/(130/260) = 10
 ###############################################################################
 # calculate MtM distributions for a Call option - BS closed formula
 
-strike<-12
-time<- T - seq(0,T,dt)   #working backwards as advised in the project notes. i should have a reading every 10 days
+#strike<-12
+#time<- T - seq(0,T,dt)   #working backwards as advised in the project notes. i should have a reading every 10 days
 
 # from lecture: the expected payoff in the future is the MtM distribution
 #C<-S*0
@@ -180,11 +180,10 @@ plot(tStep,EE,type="l")
 plot(tStep,PFE,type="l")
 
 # here the CDS curve info
-cdsT<-seq(1,5,1)
-cds<-c(92,104,112,117,120)
+cdsT<-seq(1,10,1)
+cds<-c(92,104,112,117,120,122,124, 125, 126, 127)
 par(mfrow=c(1,1))
 plot(cdsT,cds,type="l")
-
 
 t<-tStep
 r<-0.01
@@ -202,25 +201,16 @@ for (i in 2:length(t)){
 CVABasel<-LGD*sum(temp)
 print(paste("The CVA (using Basel formula) for the uncollateralized trade equals ",CVABasel))
 
-#answer = 0.12130784488567
+#0.121307909656681
 
 #########################################################################################################
 #(v) new option!
 
-#S0<-10
-#sigma<-0.3
-#mu<-0
-#T<-5
-#r<-0.01
+tStep<-10/260
+nPaths<-10000
+time<-seq(0,T,tStep) 
 
-#each time units d/dt = #Evaluation times in units of year 
-#dt<-10/260  #to get nSteps = 10, 130 is chosen. 260 is the number of business days
-#nPaths<-10000
-#nSteps<-T/dt  # 5/(130/260) = 10
-#calculate MtM2
-
-#this is the first dw used for the first option.
-pass_rand_first
+pass_rand_first #this is the first dw used for the first option.
 
 #to find the second dw2
 rho <-0.7
@@ -246,52 +236,60 @@ colnames(RF_GBM2)<-paste(as.character(time),"y",sep="")
 
 expiry<-5 
 ind<-which(colnames(RF_GBM2)==paste0(expiry,"y"))
-K<-12
-ST<-RF_GBM[,ind] #10thousand values for ending paths
-plot(ST,pmax(0,ST-K))
+strike2<-14
+ST<-RF_GBM2[,ind] #10thousand values for ending paths
+plot(ST,pmax(0,ST-strike2))
 
 # Here we make checks
 par(mfrow=c(1,2))
 par(mar=c(1,1,1,1))
-check_sd<-apply(RF_GBM,2,sd)/sqrt(time)
+check_sd<-apply(RF_GBM2,2,sd)/sqrt(time)
 plot(time,check_sd,ylim = c(0.15,0.40))
 abline(h=vola,col=2,lwd=2)
-check_mean<-apply(RF_GBM,2,mean)
+check_mean<-apply(RF_GBM2,2,mean)
 plot(time,check_mean,type="l",lwd=4)  
-abline(a = start_value ,b = drift,col=2,lwd=2)
+abline(a = S0 ,b = drift,col=2,lwd=2)
 
 par(mfrow=c(1,1))
-matplot(time,t(RF_GBM)[,1:100],type="l",xlab="t(y)",ylab="RF",main="GBM process")
-points(time,apply(t(RF_GBM),1,mean),type="l",col=1,lwd=4)
-points(time,apply(t(RF_GBM),1,quantile,0.05),type="l",col=2,lwd=4)
-points(time,apply(t(RF_GBM),1,quantile,0.95),type="l",col=2,lwd=4)
+matplot(time,t(RF_GBM2)[,1:100],type="l",xlab="t(y)",ylab="RF",main="GBM process")
+points(time,apply(t(RF_GBM2),1,mean),type="l",col=1,lwd=4)
+points(time,apply(t(RF_GBM2),1,quantile,0.05),type="l",col=2,lwd=4)
+points(time,apply(t(RF_GBM2),1,quantile,0.95),type="l",col=2,lwd=4)
 grid()
 
-
-
+#calculate MtM2
 
 RF_GBM2T<-t(RF_GBM2)
 
-C3<-RF_GBM2T*0
-for (i in 1:nrow(S3)){
-  C3[i,]<-GBSOption(TypeFlag="c",S=RF_GBM2T[i,],X=12,Time=time[i],r=r,b=r,sigma=sigma)@price
+C2<-RF_GBM2T*0
+for (i in 1:nrow(RF_GBM2T)){
+  C2[i,]<-GBSOption(TypeFlag="c",S=RF_GBM2T[i,],X=strike2,Time=time[i],r=r,b=r,sigma=vola)@price
 }
-
-S4<-S0*exp(apply((r-sigma^2/2)*dt + sigma*sqrt(dt)*dw2,1,cumsum))
-S4<-rbind(S0,S4)
-
-C4<-S4*0
-for (i in 1:nrow(S4)){
-  C4[i,]<-GBSOption(TypeFlag="c",S=S4[i,],X=14,Time=time[i],r=r,b=r,sigma=sigma)@price
-}
-
-MtM3 <-C3+C4
 
 defaultT<-seq(0,T,dt)
 par(mfrow=c(1,1))
-matplot(defaultT,C3[,1:100],type="l",ylab="Call Option - Black Scholes, price [$]",
+matplot(defaultT,C2[,1:100],type="l",ylab="Call Option - Black Scholes, price [$]",
         xlab="Default Dates [y]",main="Closed Form",ylim=c(min(C),max(C)))
 
+MtM3 <-C+C2
 
+#EE, PFE and CVA
+tStep<-seq(0,T,dt)
 
+EE<-apply(pmax(MtM3,0),1, mean)
+PFE<-apply(pmax(MtM3,0),1,quantile,0.95)
+par(mfrow=c(1,2))
+plot(tStep,EE,type="l")
+plot(tStep,PFE,type="l")
 
+temp<-c()
+for (i in 2:length(t)){
+  temp<-c(temp,max(0,exp(-(CDS_curve$y[i-1]/10000*CDS_curve$x[i-1])/LGD)-
+                     exp(-(CDS_curve$y[i]/10000*CDS_curve$x[i])/LGD))*
+            (EE[i-1]*DF[i-1]+EE[i]*DF[i])*0.5)
+}
+
+CVABasel<-LGD*sum(temp)
+print(paste("The CVA (using Basel formula) for the uncollateralized trade equals ",CVABasel))
+
+#0.212763914672764
