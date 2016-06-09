@@ -1,6 +1,6 @@
 ---
-title: "BS1811-1516 Financial Analytics Assignment 1"
-author: "C.K. Poon, Jin Lee, Chan Baik, Yujia Ren, Siang Lau"
+title: "BS1811-1516 Financial Analytics Project: Part I"
+author: "C.K. Poon, Jin Elizabeth Lee, Seungchan Baik, Yujia Ren, Siangyang Lau"
 date: "30 May 2016"
 output:
   html_document:
@@ -26,7 +26,13 @@ library(fExoticOptions)
 ```
 
 # Introduction
-To be written
+Project: Part I requires CVA Pricing, Option Pricing and Backtesting to be performed in R. For each topic, the questions require us to:
+
+  1) create and implement formula to derive distributions and theryby calculate CVA price
+  2) compare the methods of Monte Carlo and closed form solution for pricing barrier options 
+  3) conduct backtesting for IBM historical data for the last 10 years and estimate historical volatility.
+
+The report attempts to answer the questions in the order. Each section presents the relevant R code used in the analysis to answer the question and explanation.
 
 # Data Preparation
 
