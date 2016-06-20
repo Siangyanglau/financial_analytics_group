@@ -1,0 +1,29 @@
+---
+title: "BS1811-1516_Group_Assignment_2"
+author: Cheuk Kin Poon, Anne Elizabeth Jin Lee, Seungchan Baik, Yujia Ren, Siangyang Lau
+date: "20 June 2016"
+output:
+  html_document:
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+    code_folding: hide
+    theme: spacelab
+    number_sections: yes
+---
+```{r setup, include = FALSE}
+# Set knitr options
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+library(igraph)
+library(readr)
+library(dplyr)
+library(tidyr)
+library(knitr)
+library(ggplot2)
+library(PerformanceAnalytics)
+library(nloptr)
+library(tseries)
+```
+
