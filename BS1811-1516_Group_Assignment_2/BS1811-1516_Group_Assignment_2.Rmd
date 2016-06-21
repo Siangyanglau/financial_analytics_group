@@ -22,6 +22,10 @@ library(dplyr)
 library(tidyr)
 library(knitr)
 library(ggplot2)
+library(quantmod)
+library(zoo)
+library(xts)
+library(timeSeries)
 library(PerformanceAnalytics)
 library(nloptr)
 library(tseries)
@@ -29,6 +33,8 @@ setwd("~/desktop/FA")
 ```
 
 # Task A: Portfolio Optimisation
+
+
 
 # Task B: Dynamic Systematic Strategy
 
